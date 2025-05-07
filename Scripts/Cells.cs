@@ -16,7 +16,7 @@ public class CellOperations
     {
         if(l0.Length == l1.Length)
         {
-            if(l0.Length == 2 && l0[1] == TileType.Red && l1[1] == TileType.Red) // @Note Special rule for red, as the one below is not important, could be different colors
+            if(l0.Length >= 2 && l0[1] == TileType.Red && l1[1] == TileType.Red) // @Note Special rule for red, as the one below is not important, could be different colors
             {
                 return true;
             }

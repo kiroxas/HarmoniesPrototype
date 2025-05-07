@@ -299,6 +299,31 @@ namespace MyGame.RulesTests
         }
 
         [Test]
+        public void crowShapeShouldMatch()
+        {
+            HexaGrid grid = new HexaGrid();
+
+            HexCoordinate origin = new HexCoordinate(2,2);
+            grid.placeTile(origin, TileType.Yellow);
+            grid.placeTile(origin + new HexCoordinate(1,-1), TileType.Brown);
+            grid.placeTile(origin + new HexCoordinate(1,-1), TileType.Red);
+            grid.placeTile(origin + new HexCoordinate(-1,0), TileType.Red);
+            grid.placeTile(origin + new HexCoordinate(-1,0), TileType.Red);
+
+            HexShape shape = new HexShape(TileType.Yellow);
+            shape.addTile(new HexCoordinate(1, -1), TileType.Red, TileType.Red);
+            shape.addTile(new HexCoordinate(-1, 0), TileType.Red, TileType.Red);
+
+            int matchingCount = 0;
+            foreach(var (key, rotation) in grid.getMatchingPositions(shape))
+            {
+                ++matchingCount; 
+            }
+
+            Assert.IsTrue(matchingCount == 1);
+        }
+
+        [Test]
         public void shouldMatchComplexRotated()
         {
             HexaGrid grid = new HexaGrid();

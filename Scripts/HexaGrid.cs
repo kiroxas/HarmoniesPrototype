@@ -188,6 +188,11 @@ public struct HexShape
     {
         pieces.Add(new HexShapePiece(type, offset));
     }
+
+    public void addTile(HexCoordinate offset, TileType type,TileType t2)
+    {
+        pieces.Add(new HexShapePiece(type, t2, offset));
+    }
 };
 
 public class HexaGrid

@@ -264,7 +264,7 @@ public class GameRules
         return (uint)cardsToSpawn.Length;
     } 
 
-    // @Note If this returns a new Animals, then it means the card has been validated and a new one has been drawned.
+    // @Note If this returns true then it means the card has been validated
     private bool addAnimalMatch(List<AnimalCard> playerCards, Animals animal)
     {
         bool finishedCard = false;
