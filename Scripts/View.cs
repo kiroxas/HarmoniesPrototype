@@ -85,7 +85,8 @@ public class View : MonoBehaviour
             if(hoveredTile.CompareTag("HexTile") && phase == Phase.PlaceTokens)
             {
                 HexCoordinate coord = hoveredTile.GetComponent<HexRenderer>().coordinate;
-                bool canPlace = rules.canPlaceTile(coord, rules.nextTile());
+                PlaceTileReturnTypes returnType = rules.canPlaceTile(coord, rules.nextTile());
+                bool canPlace = returnType == PlaceTileReturnTypes.Validated;
 
                 // @Note Highlight logic
                 if(hoveredTile != highlighted)
@@ -111,7 +112,11 @@ public class View : MonoBehaviour
                     if(placement.match.animal != Animals.None)
                     {
                         spawnAnimalOnBoard(placement.match.coord, placement.match.animal, level + 1);
-                        spawnCubeOnAnimalCard(coord, placement.match.animal, rules.getCubesOnCards(placement.match.animal));
+                        GameObject card = spawnCubeOnAnimalCard(coord, placement.match.animal, rules.getCubesOnCards(placement.match.animal));
+                        if(placement.cardFinished) // @Improve add proper animation
+                        {
+                            card.GetComponent<Renderer>().material.color = Color.black;
+                        }
                     }
 
                     // @Improve Not very robust as the logic may want to remove them in different order. Maybe at least remove it by color ?
@@ -286,11 +291,11 @@ public class View : MonoBehaviour
         }
     }
 
-    private void spawnCubeOnAnimalCard(HexCoordinate c, Animals animal, int level)
+    private GameObject spawnCubeOnAnimalCard(HexCoordinate c, Animals animal, int level)
     {
+        GameObject parentCard = null;
         if(animal != Animals.None)
         {
-            GameObject parentCard;
             if(animalCards.TryGetValue(animal, out parentCard))
             {
                 float scale = 0.45f;
@@ -301,6 +306,8 @@ public class View : MonoBehaviour
                 cube.GetComponent<Renderer>().material.color = Color.yellow;
             }
         }
+
+        return parentCard;
     }
 
     // @Debug use to verify that shape definitions are correct 

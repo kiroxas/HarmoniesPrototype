@@ -11,10 +11,20 @@ public struct Match
     public HexCoordinate coord;
 };
 
+public enum PlaceTileReturnTypes
+{
+    Validated,
+    InvalidPhase,
+    InvalidType,
+    InvalidCoordinate,
+};
+
 public struct PlaceTileResult
 {
+    public PlaceTileReturnTypes result;
     public Match match;
     public int   level;
+    public bool  cardFinished;
 };
 
 public class AnimalCard
@@ -32,6 +42,7 @@ public class GameRules
     public Phase            phase { get; private set; }
 
     private List<AnimalCard> playerCards;
+    private List<Animals>    validatedCards;
     private RandomGenerator  random;
     private uint             currentlySelectedTokenBoard;
     private CardData[]       cardsToSpawn;
@@ -39,7 +50,8 @@ public class GameRules
     public GameRules(Resources[] tiles, CardData[] cardsToSpawn)
     {
         grid = new HexaGrid();
-        playerCards = new List<AnimalCard>();        
+        playerCards = new List<AnimalCard>(); 
+        validatedCards = new List<Animals>();   
         random = new RandomGenerator(4102);
 
         int enumCount = Enum.GetValues(typeof(TileType)).Length;
@@ -129,20 +141,39 @@ public class GameRules
 
     public PlaceTileResult placeTile(HexCoordinate coord, TileType type)
     {
-        int level = grid.placeTile(coord, type);
-        Match match = bruteForceMatches();
-
-        if(match.animal != Animals.None)
+        PlaceTileReturnTypes result = canPlaceTile(coord, type);
+        if(result == PlaceTileReturnTypes.Validated)
         {
-            grid.placeAnimal(match.coord, match.animal);
-            addAnimalMatch(playerCards, match.animal);
+            if(canPlayThisType(type) == false)
+            {
+                result = PlaceTileReturnTypes.InvalidType;
+            }
+            else
+            {
+                int level = grid.placeTile(coord, type);
+                Match match = bruteForceMatches();
+                bool cardFinished = false;
+
+                if(match.animal != Animals.None)
+                {
+                    grid.placeAnimal(match.coord, match.animal);
+                    cardFinished = addAnimalMatch(playerCards, match.animal);
+                }
+
+                return new PlaceTileResult { result = result, match = match, level = level, cardFinished = cardFinished};
+            }
         }
 
-        return new PlaceTileResult { match = match, level = level};
+        return new PlaceTileResult { result = result };
     }
 
-    public bool canPlaceTile(HexCoordinate coord, TileType type)
+    public PlaceTileReturnTypes canPlaceTile(HexCoordinate coord, TileType type)
     {
+        PlaceTileReturnTypes result = PlaceTileReturnTypes.Validated;
+        if(phase != Phase.PlaceTokens)
+        {
+            return PlaceTileReturnTypes.InvalidPhase;
+        }
         return grid.canPlaceTile(coord, type);
     }
 
@@ -209,15 +240,42 @@ public class GameRules
         }
     }
 
-    private void addAnimalMatch(List<AnimalCard> playerCards, Animals animal)
+    private uint getCardData(Animals animal)
     {
+        for(uint i = 0; i <  (uint)cardsToSpawn.Length; ++i)
+        {
+            if(cardsToSpawn[i].animal == animal)
+            {
+                return i;
+            }
+        }
+
+        return (uint)cardsToSpawn.Length;
+    } 
+
+    // @Note If this returns a new Animals, then it means the card has been validated and a new one has been drawned.
+    private bool addAnimalMatch(List<AnimalCard> playerCards, Animals animal)
+    {
+        bool finishedCard = false;
         for(int i =0; i < playerCards.Count; ++i)
         {
             if(playerCards[i].animal == animal)
             {
                 playerCards[i].matchedCount += 1;
+                uint index = getCardData(animal);
+                if(index < cardsToSpawn.Length)
+                {
+                    finishedCard = playerCards[i].matchedCount >= cardsToSpawn[index].scores.Length;
+                    if(finishedCard)
+                    {
+                        validatedCards.Add(animal);
+                        playerCards.RemoveAt(i);
+                    }
+                }
                 break;
             }
         }
+
+        return finishedCard;
     }
 };

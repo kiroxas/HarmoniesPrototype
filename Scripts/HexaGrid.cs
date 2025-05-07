@@ -271,15 +271,22 @@ public class HexaGrid
         }
     }
 
-    public bool canPlaceTile(HexCoordinate coordinate, TileType tile)
+    public PlaceTileReturnTypes canPlaceTile(HexCoordinate coordinate, TileType tile)
     {
         GridCell cell;
         if(grid.TryGetValue(coordinate, out cell))
         {
-            return cell.canPlace(tile);
+            if(cell.canPlace(tile))
+            {
+                return PlaceTileReturnTypes.Validated;
+            }
+            else
+            {
+                return PlaceTileReturnTypes.InvalidType;
+            }
         }
 
-        return false;
+        return PlaceTileReturnTypes.InvalidCoordinate;
     }
 
     public (bool, int) matchShape(HexCoordinate coordinate, HexShape shape)
