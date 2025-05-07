@@ -75,6 +75,14 @@ public class View : MonoBehaviour
         instantiateCard(rules.drawOneCardAnimal(), new Vector3(4,1,-2));
     }
 
+    private void changeCardColor(GameObject cardParent, Color color)
+    {
+        foreach (Transform child in cardParent.transform)
+        {
+            child.GetComponent<Renderer>().material.color = color;
+        }
+    }
+
     void Update()
     {    
         if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
@@ -104,18 +112,20 @@ public class View : MonoBehaviour
                 {
                     TileType type = rules.nextTile();
                     PlaceTileResult placement = rules.placeTile(coord, type);
-                    int level = placement.level;
+                    int levelOnBoard = placement.levelOnBoard;
                     bool isEmpty = rules.consume(type);
 
-                    spawnTokenOnBoard(coord, type, level);
+                    spawnTokenOnBoard(coord, type, levelOnBoard);
 
                     if(placement.match.animal != Animals.None)
                     {
-                        spawnAnimalOnBoard(placement.match.coord, placement.match.animal, level + 1);
-                        GameObject card = spawnCubeOnAnimalCard(coord, placement.match.animal, rules.getCubesOnCards(placement.match.animal));
+                        spawnAnimalOnBoard(placement.match.coord, placement.match.animal, levelOnBoard + 1);
+                        int levelOnCard = rules.getCubesOnCards(placement.match.animal);
+                        GameObject card = spawnCubeOnAnimalCard(coord, placement.match.animal, levelOnCard);
+
                         if(placement.cardFinished) // @Improve add proper animation
                         {
-                            card.GetComponent<Renderer>().material.color = Color.black;
+                            changeCardColor(card, Color.red);
                         }
                     }
 

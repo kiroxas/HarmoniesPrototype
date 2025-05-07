@@ -23,7 +23,7 @@ public struct PlaceTileResult
 {
     public PlaceTileReturnTypes result;
     public Match match;
-    public int   level;
+    public int   levelOnBoard;
     public bool  cardFinished;
 };
 
@@ -136,6 +136,18 @@ public class GameRules
             }
         }
 
+        for(int i =0; i < validatedCards.Count; ++i)
+        {
+            if(validatedCards[i] == animal)
+            {
+                uint index = getCardData(animal);
+                if(index < cardsToSpawn.Length)
+                {
+                    return cardsToSpawn[index].scores.Length;
+                }
+            }
+        }
+
         return 0;
     }
 
@@ -160,7 +172,7 @@ public class GameRules
                     cardFinished = addAnimalMatch(playerCards, match.animal);
                 }
 
-                return new PlaceTileResult { result = result, match = match, level = level, cardFinished = cardFinished};
+                return new PlaceTileResult { result = result, match = match, levelOnBoard = level, cardFinished = cardFinished};
             }
         }
 
@@ -169,7 +181,6 @@ public class GameRules
 
     public PlaceTileReturnTypes canPlaceTile(HexCoordinate coord, TileType type)
     {
-        PlaceTileReturnTypes result = PlaceTileReturnTypes.Validated;
         if(phase != Phase.PlaceTokens)
         {
             return PlaceTileReturnTypes.InvalidPhase;
