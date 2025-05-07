@@ -18,4 +18,4 @@ Not implemented :
 - Multiple players
 - UI and screen
 - Score count
-- Finishing an animal card and redraw of cards
+- Redraw of cards
