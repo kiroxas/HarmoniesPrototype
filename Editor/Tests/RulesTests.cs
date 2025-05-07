@@ -164,6 +164,37 @@ namespace MyGame.RulesTests
         }
     }
 
+    public class GameTests
+    {
+        [Test]
+        public void SimpleGameflow()
+        {
+            CardData[] cardsToSpawn = null;
+            Resources[] resources = new Resources[2];
+            resources[0] = new Resources(TileType.Blue, 25);
+
+            GameRules grid = new GameRules(resources, cardsToSpawn);
+
+            // @Note Invalid Color
+            PlaceTileResult result = grid.placeTile(new HexCoordinate(0,0,0), TileType.Red);
+            Assert.AreEqual(PlaceTileReturnTypes.InvalidPhase, result.result);
+            bool selected = grid.selectTokenBoard(0);
+            Assert.IsTrue(selected);
+
+            // @Note Invalid Color
+            PlaceTileResult result1 = grid.placeTile(new HexCoordinate(0,0,0), TileType.Red);
+            Assert.AreEqual(PlaceTileReturnTypes.InvalidType, result1.result);
+
+            // @Note Invalid Coord
+            PlaceTileResult result2 = grid.placeTile(new HexCoordinate(-5,-10,15), TileType.Red);
+            Assert.AreEqual(PlaceTileReturnTypes.InvalidCoordinate, result2.result);
+
+            // @Note Valid move
+            PlaceTileResult result3 = grid.placeTile(new HexCoordinate(0,0,0), TileType.Blue);
+            Assert.AreEqual(PlaceTileReturnTypes.Validated, result3.result);
+        }
+    }
+
     public class HexaGridTests
     {
         [Test]
@@ -185,7 +216,7 @@ namespace MyGame.RulesTests
         {
             HexaGrid grid = new HexaGrid();
 
-             HexCoordinate coord = new HexCoordinate(0,2);
+            HexCoordinate coord = new HexCoordinate(0,2);
             grid.placeTile(new HexCoordinate(0,0), TileType.Brown);
             grid.placeTile(new HexCoordinate(0,0), TileType.Red);
             grid.placeTile(coord, TileType.Red);
