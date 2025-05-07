@@ -8,4 +8,5 @@ public class CardData : ScriptableObject
     public Sprite icon;
     public Animals animal;
     public AnimalShape shape;
+    public uint[] scores;
 };
