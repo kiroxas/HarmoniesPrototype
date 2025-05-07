@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91273bfa156d16f4da71580429979570, type: 3}
+  m_Name: Bee
+  m_EditorClassIdentifier: 
+  icon: {fileID: 1966295162, guid: c04c582b34ce1414cb9b6f4d46b541ea, type: 3}
+  animal: 4
+  shape: {fileID: 11400000, guid: 04981e5468f05e84db793019933eebd9, type: 2}
