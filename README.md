@@ -18,4 +18,3 @@ Not implemented :
 - Multiple players
 - UI and screen
 - Score count
-- Redraw of cards
