@@ -289,4 +289,9 @@ public class GameRules
 
         return finishedCard;
     }
+
+    public uint numberOfCardsFinished()
+    {
+        return (uint)validatedCards.Count;
+    }
 };

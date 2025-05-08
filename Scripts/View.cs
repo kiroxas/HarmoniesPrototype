@@ -36,6 +36,8 @@ public class View : MonoBehaviour
     public Color cancelColor = Color.red;
     public TokenRessources resources;
 
+    private GameObject cardsRoot = null;
+    private GameObject cardsDoneRoot = null;
     private GameObject highlighted = null;
     private Dictionary<HexCoordinate, GameObject> hexGrid;
     private GameRules rules;
@@ -70,9 +72,23 @@ public class View : MonoBehaviour
         layoutTokens();
         layoutTokenBoard(new Vector3(8.5f,0,0));
 
-        instantiateCard(rules.drawOneCardAnimal(), new Vector3(0,1,-2));
-        instantiateCard(rules.drawOneCardAnimal(), new Vector3(2,1,-2));
-        instantiateCard(rules.drawOneCardAnimal(), new Vector3(4,1,-2));
+        instantiateCards();
+        instantiateCardsDone();
+    }
+
+    private void instantiateCards()
+    {
+        cardsRoot = new GameObject("CardsRoot");
+        cardsRoot.transform.position += new Vector3(0.0f,1.6f,-2.0f);
+        instantiateCard(cardsRoot, rules.drawOneCardAnimal(), new Vector3(0,0,0));
+        instantiateCard(cardsRoot, rules.drawOneCardAnimal(), new Vector3(2,0,0));
+        instantiateCard(cardsRoot, rules.drawOneCardAnimal(), new Vector3(4,0,0));
+    }
+
+    private void instantiateCardsDone()
+    {
+        cardsDoneRoot = new GameObject("cardsDoneRoot");
+        cardsDoneRoot.transform.position += new Vector3(-3.5f,2.0f,2.2f);
     }
 
     private void changeCardColor(GameObject cardParent, Color color)
@@ -125,7 +141,17 @@ public class View : MonoBehaviour
 
                         if(placement.cardFinished) // @Improve add proper animation
                         {
+                            Vector3 previousPosition = card.transform.localPosition;
+
+                            card.transform.SetParent(cardsDoneRoot.transform);
+                            card.transform.localPosition = new Vector3(0, rules.numberOfCardsFinished() - 1 * 2.0f, 0.0f);
                             changeCardColor(card, Color.red);
+
+                            Animals newCard = rules.drawOneCardAnimal();
+                            if(newCard != Animals.None)
+                            {
+                                instantiateCard(cardsRoot, newCard, previousPosition);
+                            }
                         }
                     }
 
@@ -202,17 +228,21 @@ public class View : MonoBehaviour
         }
     }
 
-    private void instantiateCard(Animals animal, Vector3 position)
+    private void instantiateCard(GameObject parent, Animals animal, Vector3 position)
     {
         foreach(CardData c in cardsToSpawn)
         {
             if(c.animal == animal)
             {
-                GameObject card = Instantiate(cardPrefab, position, Quaternion.Euler(90f, 0f, 0f));
+                GameObject card = Instantiate(cardPrefab, new Vector3(0,0,0), Quaternion.Euler(90f, 0f, 0f));
+
+                card.transform.SetParent(parent.transform);
+                card.transform.localPosition = position;
                 CardMesh mesh = card.GetComponent<CardMesh>();
 
                 mesh.createCard(c);
                 animalCards[animal] = card;
+                break;
             }
         }
     }
@@ -310,8 +340,8 @@ public class View : MonoBehaviour
             {
                 float scale = 0.45f;
                 GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                cube.transform.position = parentCard.transform.position + Vector3.up * scale * (level - 1);
-                
+                cube.transform.SetParent(parentCard.transform);
+                cube.transform.localPosition = new Vector3(0.0f, 0.0f, -1.0f * scale * (level - 1));
                 cube.transform.localScale = new Vector3(scale, scale, scale);
                 cube.GetComponent<Renderer>().material.color = Color.yellow;
             }
