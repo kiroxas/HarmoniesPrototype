@@ -17,4 +17,4 @@ Just drag and drop it in the view script afterward.
 Not implemented : 
 - Multiple players
 - UI and screen
-- Score count
+- Score count (just missing blue token count right now)
