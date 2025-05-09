@@ -5,6 +5,8 @@ using System;
 using UnityEngine.Assertions;
 using UnityEngine;
 
+using System.Numerics;
+
 
 // http://devmag.org.za/2013/08/31/geometry-with-hex-coordinates/
 //@Note https://www.redblobgames.com/grids/hexagons/
@@ -200,17 +202,15 @@ public class HexaGrid
     private Dictionary<HexCoordinate, GridCell> grid;
     static readonly HexCoordinate[] hexDirections = { new HexCoordinate(1,0 ,-1), new HexCoordinate(1,-1,0), new HexCoordinate(0,-1,1), new HexCoordinate(-1,0,1), new HexCoordinate(-1,1,0), new HexCoordinate(0,1,-1) };
 
-    public HexaGrid()
+    public HexaGrid(uint rows = HardRules.normalRows, uint columns = HardRules.normalColumns)
     {
         grid = new Dictionary<HexCoordinate, GridCell>();
-        int rows = 5;
-        int columns = 5;
 
-        for (int q = 0; q < rows; q++)
+        for (int q = 0; q < (int)rows; q++)
         { 
             int q_offset = (int)Math.Floor(q/2.0f);
 
-            int cols = q % 2 == 0 ? columns : columns - 1;
+            int cols = q % 2 == 0 ? (int)columns : (int)columns - 1;
             for (int r = 0 - q_offset; r < cols - q_offset; r++) 
             {
                 HexCoordinate coordinate = new HexCoordinate(q, r, -q-r);
@@ -342,6 +342,94 @@ public class HexaGrid
         }
 
         return (result, rotation);
+    }
+
+    public uint getScoreFromBoard(TileType type)
+    {
+        uint score = 0;
+        switch(type)
+        {
+            case TileType.Green:
+            {
+                foreach(var (coordinate, cell) in iterate())
+                {
+                    TileType topType = cell.getTopTile();
+                    if(topType == TileType.Green)
+                    {
+                        switch(cell.currentLevel)
+                        {
+                            case 1 : score += HardRules.greenSize1Points; break;
+                            case 2 : score += HardRules.greenSize2Points; break;
+                            case 3 : score += HardRules.greenSize3Points; break;
+                        }
+                    }
+                }
+                break;
+            }
+            case TileType.Red:
+            {
+                foreach(var (coordinate, cell) in iterate())
+                {
+                    if(cell.currentLevel == 2 && cell.getTopTile() == TileType.Red)
+                    {
+                        uint differentNeighboors = 0;
+                        uint flags = 0;
+                        foreach(HexCoordinate c in getNeighboors(coordinate))
+                        {
+                            GridCell neighboor;
+                            if(grid.TryGetValue(c, out neighboor))
+                            {
+                                TileType t = neighboor.getTopTile();
+                                uint fl = (uint)1 << (int)t;
+                                if((flags & fl) == 0)
+                                {
+                                    ++differentNeighboors;
+                                    flags |= fl;
+                                }
+                            }
+                        }
+
+                        score += (differentNeighboors >= 3) ? HardRules.redValidated : HardRules.redNotValidated;
+                    }
+                }
+                break;
+            }
+            case TileType.Gray:
+            {
+                foreach(var (coordinate, cell) in iterate())
+                {
+                    if(cell.getTopTile() == TileType.Gray)
+                    {
+                        bool hasGrayNeighboor = false;
+                        foreach(HexCoordinate c in getNeighboors(coordinate))
+                        {
+                            GridCell neighboor;
+                            if(grid.TryGetValue(c, out neighboor))
+                            {
+                                TileType t = neighboor.getTopTile();
+                                if(t == TileType.Gray)
+                                {
+                                    hasGrayNeighboor = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if(hasGrayNeighboor)
+                        {
+                            switch(cell.currentLevel)
+                            {
+                                case 1 : score += HardRules.graySize1Points; break;
+                                case 2 : score += HardRules.graySize2Points; break;
+                                case 3 : score += HardRules.graySize3Points; break;
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        return score;
     }
 
     public bool matchShape(HexCoordinate coordinate, TileType[] tiles)

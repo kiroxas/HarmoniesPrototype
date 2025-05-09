@@ -121,11 +121,6 @@ public class GameRules
         return result;
     }
 
-    public void clearBoard()
-    {
-        grid.clear();
-    }
-
     public int getCubesOnCards(Animals animal)
     {
         for(int i =0; i < playerCards.Count; ++i)
@@ -204,6 +199,50 @@ public class GameRules
 
         return result;
     }
+
+    public uint numberOfCardsFinished()
+    {
+        return (uint)validatedCards.Count;
+    }
+
+    // @Note Score related
+
+    public uint getScoreFromCards()
+    {
+        uint score = 0;
+        foreach(Animals a in validatedCards)
+        {
+            uint index = getCardData(a);
+            if(index < cardsToSpawn.Length)
+            {
+                foreach(uint c in cardsToSpawn[index].scores)
+                {
+                    score += c;
+                }
+            }
+        }
+
+        foreach(AnimalCard a in playerCards)
+        {
+            uint index = getCardData(a.animal);
+            if(index < cardsToSpawn.Length)
+            {
+                for(uint i = 0; i < a.matchedCount; ++i)
+                {
+                    score += cardsToSpawn[index].scores[i];
+                }
+            }
+        }
+
+        return score;
+    }
+
+    public uint getScoreFromBoard(TileType type)
+    {
+        return grid.getScoreFromBoard(type);
+    }
+
+    // @Note Private functions -------------------------
 
     private static T popBack<T>(List<T> list)
     {
@@ -288,10 +327,5 @@ public class GameRules
         }
 
         return finishedCard;
-    }
-
-    public uint numberOfCardsFinished()
-    {
-        return (uint)validatedCards.Count;
     }
 };

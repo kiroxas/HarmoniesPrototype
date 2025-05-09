@@ -46,13 +46,25 @@ public class GridCell
     public GridCell()
     {
         levels = new TileType[HardRules.maxElevation];
-        clear();
+        currentLevel = 0;
+        animalOnTile = Animals.None;
     }
 
     public void clear()
     {
         currentLevel = 0;
         animalOnTile = Animals.None;
+    }
+
+    public TileType getTopTile()
+    {
+        TileType type = TileType.None;
+        if(currentLevel > 0)
+        {
+            type = levels[currentLevel - 1];
+        }
+
+        return type;
     }
 
     public TileType getTileAtLevel(int level)

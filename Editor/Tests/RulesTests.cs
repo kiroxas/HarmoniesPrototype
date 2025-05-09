@@ -198,6 +198,74 @@ namespace MyGame.RulesTests
     public class HexaGridTests
     {
         [Test]
+        public void greenTilesScores()
+        {
+            HexaGrid grid = new HexaGrid();
+
+            grid.placeTile(new HexCoordinate(0,0), TileType.Brown);
+            grid.placeTile(new HexCoordinate(0,0), TileType.Red);
+            grid.placeTile(new HexCoordinate(0,2), TileType.Brown);
+            grid.placeTile(new HexCoordinate(0,2), TileType.Green);
+            grid.placeTile(new HexCoordinate(1,3), TileType.Blue);
+            grid.placeTile(new HexCoordinate(2,3), TileType.Green);
+            grid.placeTile(new HexCoordinate(3,2), TileType.Yellow);
+            grid.placeTile(new HexCoordinate(3,1), TileType.Green);
+            grid.placeTile(new HexCoordinate(3,0), TileType.Yellow);
+            grid.placeTile(new HexCoordinate(3,-1), TileType.Blue);
+
+            uint score = grid.getScoreFromBoard(TileType.Green);
+            uint expectedScore = HardRules.greenSize1Points * 2 + HardRules.greenSize2Points;
+            Assert.AreEqual(expectedScore, score);
+        }
+
+        [Test]
+        public void redTilesScores()
+        {
+            HexaGrid grid = new HexaGrid();
+
+            HexCoordinate origin = new HexCoordinate(2,2);
+            grid.placeTile(origin, TileType.Brown);
+            grid.placeTile(origin, TileType.Red);
+            grid.placeTile(origin + new HexCoordinate(1,0), TileType.Brown);
+            grid.placeTile(origin + new HexCoordinate(0,1), TileType.Green);
+            grid.placeTile(origin + new HexCoordinate(1,-1), TileType.Blue); // @Note One validated red
+
+            grid.placeTile(new HexCoordinate(2,3), TileType.Red); // @Note should not count as only on level 0
+            grid.placeTile(new HexCoordinate(2,4), TileType.Yellow);
+            grid.placeTile(new HexCoordinate(2,2), TileType.Green);
+            grid.placeTile(new HexCoordinate(3,3), TileType.Blue);
+            grid.placeTile(new HexCoordinate(3,2), TileType.Gray);
+            grid.placeTile(new HexCoordinate(3,2), TileType.Red); // @Note One validated red
+
+            uint score = grid.getScoreFromBoard(TileType.Red);
+            uint expectedScore = HardRules.redValidated * 2 + HardRules.redNotValidated;
+            Assert.AreEqual(expectedScore, score);
+        }
+
+        [Test]
+        public void grayTilesScores()
+        {
+            HexaGrid grid = new HexaGrid(10, 10);
+
+            HexCoordinate origin = new HexCoordinate(5,5);
+            grid.placeTile(origin, TileType.Brown);
+            grid.placeTile(origin, TileType.Red);
+            grid.placeTile(origin + new HexCoordinate(1,0), TileType.Gray); // @Note no neighboors
+            grid.placeTile(origin + new HexCoordinate(1,0), TileType.Gray); // @Note no neighboors
+            grid.placeTile(origin + new HexCoordinate(0,1), TileType.Green);
+            grid.placeTile(origin + new HexCoordinate(1,-1), TileType.Blue); 
+
+            grid.placeTile(new HexCoordinate(3,3), TileType.Gray);
+            grid.placeTile(new HexCoordinate(3,2), TileType.Gray);
+            grid.placeTile(new HexCoordinate(3,2), TileType.Gray);
+            grid.placeTile(new HexCoordinate(3,2), TileType.Gray);
+
+            uint score = grid.getScoreFromBoard(TileType.Gray);
+            uint expectedScore = HardRules.graySize1Points + HardRules.graySize3Points;
+            Assert.AreEqual(expectedScore, score);
+        }
+
+        [Test]
         public void neighboorsShouldNotContainCenter()
         {
             HexaGrid grid = new HexaGrid();

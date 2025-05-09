@@ -15,3 +15,4 @@ MonoBehaviour:
   icon: {fileID: 1742937945, guid: c04c582b34ce1414cb9b6f4d46b541ea, type: 3}
   animal: 1
   shape: {fileID: 11400000, guid: 7c0a3621fa14dcf4f81c3326e50b7a41, type: 2}
+  scores: 050000000b00000012000000

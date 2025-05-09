@@ -32,6 +32,20 @@ public class HardRules
     public const int maxElevation  = 3;
     public const int choiceOptions = 5;
     public const int tokenNumberPerSlot = 3;
+
+    public const uint greenSize1Points = 1;
+    public const uint greenSize2Points = 3;
+    public const uint greenSize3Points = 7;
+
+    public const uint redValidated = 5;
+    public const uint redNotValidated = 0;
+
+    public const uint graySize1Points = 1;
+    public const uint graySize2Points = 3;
+    public const uint graySize3Points = 7;
+
+    public const uint normalRows = 5;
+    public const uint normalColumns = 5;
 };
 
 public class VisualValues
