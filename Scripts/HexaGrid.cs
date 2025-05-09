@@ -5,9 +5,6 @@ using System;
 using UnityEngine.Assertions;
 using UnityEngine;
 
-using System.Numerics;
-
-
 // http://devmag.org.za/2013/08/31/geometry-with-hex-coordinates/
 //@Note https://www.redblobgames.com/grids/hexagons/
 [System.Serializable]
@@ -239,7 +236,7 @@ public class HexaGrid
 
     public int placeTile(HexCoordinate coordinate, TileType tile)
     {
-        int result = 0;
+        int result = -1;
         GridCell cell;
         if(grid.TryGetValue(coordinate, out cell))
         {
@@ -428,8 +425,64 @@ public class HexaGrid
                 }
                 break;
             }
+            case TileType.Yellow:
+            {
+                List<HexCoordinate> alreadyCounted = new List<HexCoordinate>();
+                uint validatedFields = 0;
+                foreach(var (coordinate, cell) in iterate())
+                {
+                    TileType t0 = cell.getTopTile();
+                    if(t0 == TileType.Yellow)
+                    {
+                        if((alreadyCounted.Exists( c => c == coordinate) == false))
+                        {
+                            alreadyCounted.Add(coordinate);
+                            bool validatedNeighboor = false;
+                            foreach(HexCoordinate c in getNeighboors(coordinate))
+                            {
+                                GridCell neighboor;
+                                if(grid.TryGetValue(c, out neighboor))
+                                {
+                                    TileType t = neighboor.getTopTile();
+                                    if(t == TileType.Yellow && (alreadyCounted.Exists( c0 => c0 == c) == false))
+                                    {
+                                        if(validatedNeighboor == false)
+                                        {
+                                            ++validatedFields;
+                                            validatedNeighboor = true;
+                                        }
+
+                                        alreadyCounted.Add(c);
+                                        annotateAllYellowFields(c, alreadyCounted);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                score += validatedFields * HardRules.yellowPoints;
+                break;
+            }
         }
         return score;
+    }
+
+    private void annotateAllYellowFields(HexCoordinate coordinate, List<HexCoordinate> coords)
+    {
+        foreach(HexCoordinate c in getNeighboors(coordinate))
+        {
+            GridCell neighboor;
+            if(grid.TryGetValue(c, out neighboor))
+            {
+                TileType t = neighboor.getTopTile();
+                if(t == TileType.Yellow && (coords.Exists(c0 => c0 == c) == false))
+                {
+                    coords.Add(c);
+                    annotateAllYellowFields(c, coords);
+                }
+            }
+        }
     }
 
     public bool matchShape(HexCoordinate coordinate, TileType[] tiles)

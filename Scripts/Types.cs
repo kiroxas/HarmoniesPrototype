@@ -46,6 +46,8 @@ public class HardRules
 
     public const uint normalRows = 5;
     public const uint normalColumns = 5;
+
+    public const uint yellowPoints = 5;
 };
 
 public class VisualValues

@@ -266,6 +266,31 @@ namespace MyGame.RulesTests
         }
 
         [Test]
+        public void yellowTilesScores()
+        {
+            HexaGrid grid = new HexaGrid(10, 10);
+
+            int p;
+            HexCoordinate origin = new HexCoordinate(2,2);
+            grid.placeTile(origin, TileType.Yellow);
+            grid.placeTile(origin + new HexCoordinate(1,0), TileType.Yellow);
+            grid.placeTile(origin + new HexCoordinate(0,1), TileType.Yellow);
+            grid.placeTile(origin + new HexCoordinate(1,-1), TileType.Yellow); 
+            grid.placeTile(origin + new HexCoordinate(-1,1), TileType.Yellow); // @Note All should just be one
+
+            grid.placeTile(new HexCoordinate(5,5), TileType.Yellow); // @Note should not count
+
+            p = grid.placeTile(new HexCoordinate(7,0), TileType.Yellow);
+            Assert.AreEqual(0, p);
+            p = grid.placeTile(new HexCoordinate(7,1), TileType.Yellow);// @Note All should just be one
+            Assert.AreEqual(0, p);
+
+            uint score = grid.getScoreFromBoard(TileType.Yellow);
+            uint expectedScore = HardRules.yellowPoints * 2;
+            Assert.AreEqual(expectedScore, score);
+        }
+
+        [Test]
         public void neighboorsShouldNotContainCenter()
         {
             HexaGrid grid = new HexaGrid();
