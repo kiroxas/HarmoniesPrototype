@@ -291,6 +291,43 @@ namespace MyGame.RulesTests
         }
 
         [Test]
+        public void blueTilesScoresRing()
+        {
+            HexaGrid grid = new HexaGrid(10, 10);
+            HexCoordinate origin = new HexCoordinate(1,1);
+
+            foreach(HexCoordinate coord in HexaGrid.hexDirections)
+            {
+                grid.placeTile(origin + coord, TileType.Blue);
+            }
+
+            uint score = grid.getScoreFromBoard(TileType.Blue);
+            uint expectedScore = RulesOperations.getCorrespondingBlueScore(6);
+            Assert.AreEqual(expectedScore, score);
+        }
+
+        [Test]
+        public void blueTilesScores()
+        {
+            HexaGrid grid = new HexaGrid(10, 10);
+
+            HexCoordinate origin = new HexCoordinate(1,2);
+
+            grid.placeTile(origin, TileType.Blue);
+            grid.placeTile(origin + new HexCoordinate(0, -1), TileType.Blue);
+            grid.placeTile(origin + new HexCoordinate(0, -2), TileType.Blue);
+            grid.placeTile(origin + new HexCoordinate(1, -2), TileType.Blue);
+            grid.placeTile(origin + new HexCoordinate(2, -2), TileType.Blue);
+            grid.placeTile(origin + new HexCoordinate(2, -1), TileType.Blue);
+            grid.placeTile(origin + new HexCoordinate(3, -1), TileType.Blue);
+            
+            uint score = grid.getScoreFromBoard(TileType.Blue);
+            uint expectedScore = RulesOperations.getCorrespondingBlueScore(6);
+            Assert.AreEqual(expectedScore, score);
+        }
+
+
+        [Test]
         public void neighboorsShouldNotContainCenter()
         {
             HexaGrid grid = new HexaGrid();

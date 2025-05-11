@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 
 using UnityEngine.Assertions;
 using UnityEngine;
@@ -194,10 +195,30 @@ public struct HexShape
     }
 };
 
+public class RulesOperations
+{
+    static public uint getCorrespondingBlueScore(uint size)
+    {
+        uint score = 0;
+        switch(size)
+        {
+            case 1 : score = 0; break;
+            case 2 : score = 2; break;
+            case 3 : score = 5; break;
+            case 4 : score = 8; break;
+            case 5 : score = 11; break;
+            case 6 : score = 15; break;
+            default : score = 15 + (size -6) * 4; break;
+        }
+
+        return score;
+    }
+};
+
 public class HexaGrid
 {
     private Dictionary<HexCoordinate, GridCell> grid;
-    static readonly HexCoordinate[] hexDirections = { new HexCoordinate(1,0 ,-1), new HexCoordinate(1,-1,0), new HexCoordinate(0,-1,1), new HexCoordinate(-1,0,1), new HexCoordinate(-1,1,0), new HexCoordinate(0,1,-1) };
+    public static readonly HexCoordinate[] hexDirections = { new HexCoordinate(1,0 ,-1), new HexCoordinate(1,-1,0), new HexCoordinate(0,-1,1), new HexCoordinate(-1,0,1), new HexCoordinate(-1,1,0), new HexCoordinate(0,1,-1) };
 
     public HexaGrid(uint rows = HardRules.normalRows, uint columns = HardRules.normalColumns)
     {
@@ -212,6 +233,31 @@ public class HexaGrid
             {
                 HexCoordinate coordinate = new HexCoordinate(q, r, -q-r);
                 grid[coordinate] = new GridCell();
+            }
+        }
+    }
+
+    public HashSet<HexCoordinate> getConnectedTiles(HexCoordinate coordinate, TileType type)
+    {
+        HashSet<HexCoordinate> tiles = new  HashSet<HexCoordinate>();
+        getConnectedTiles(tiles, coordinate, type);
+
+        return tiles;
+    }
+
+    public void getConnectedTiles(HashSet<HexCoordinate> tiles , HexCoordinate coordinate, TileType type)
+    {
+        tiles.Add(coordinate);
+        foreach(HexCoordinate c in getNeighboors(coordinate))
+        {
+            GridCell neighboor;
+            if(grid.TryGetValue(c, out neighboor))
+            {
+                TileType t = neighboor.getTopTile();
+                if(t == type && (tiles.Contains(c) == false))
+                {
+                    getConnectedTiles(tiles, c, type);
+                }
             }
         }
     }
@@ -464,8 +510,76 @@ public class HexaGrid
                 score += validatedFields * HardRules.yellowPoints;
                 break;
             }
+            case TileType.Blue:
+            {
+                HashSet<HexCoordinate> seen = new HashSet<HexCoordinate>();
+                foreach(var (coordinate, cell) in iterate())
+                {
+                    TileType t0 = cell.getTopTile();
+                    if(t0 == TileType.Blue && (seen.Contains(coordinate) == false))
+                    {
+                        HashSet<HexCoordinate> connected = getConnectedTiles(coordinate, TileType.Blue);
+                        if(connected.Count > 0)
+                        {
+                            seen.UnionWith(connected);
+                            var (score1, coor) = findFarthestCoordinate(coordinate, connected);
+                            var (score2, coor2) = findFarthestCoordinate(coor, connected);
+
+                            score += RulesOperations.getCorrespondingBlueScore(score2);
+                        }
+                    }
+                }
+                break;
+            }
         }
         return score;
+    }
+
+    private (uint, HexCoordinate) findFarthestCoordinate(HexCoordinate first, HashSet<HexCoordinate> coordinates)
+    {
+        Dictionary<HexCoordinate, uint> scores = new Dictionary<HexCoordinate, uint>();
+        Stack<HexCoordinate> toVisit = new Stack<HexCoordinate>();
+        toVisit.Push(first);
+        scores[first] = 1;
+        uint highestScore = 1;
+
+        while(toVisit.Count > 0)
+        {
+            HexCoordinate coordinate = toVisit.Pop();
+            uint score = scores[coordinate] + 1;
+            foreach(HexCoordinate c in getNeighboors(coordinate))
+            {
+                if(coordinates.Contains(c))
+                {
+                    uint otherScore;
+                    bool add = false;
+                    if(scores.TryGetValue(c, out otherScore))
+                    {
+                        if(score < otherScore)
+                        {
+                            add = true;
+                        }
+                    }
+                    else
+                    {
+                        add = true;
+                    }
+
+                    if(add)
+                    {
+                        scores[c] = score;
+                        if(highestScore < score)
+                        {
+                            highestScore = score;
+                            first = c;
+                        }
+                        toVisit.Push(c);
+                    }
+                }
+            }
+        }
+
+        return (highestScore, first);
     }
 
     private void annotateAllYellowFields(HexCoordinate coordinate, List<HexCoordinate> coords)

@@ -308,7 +308,7 @@ public class View : MonoBehaviour
             Vector3 center = pos + transform.position;
             GameObject tile = Instantiate(hexPrefab, center, Quaternion.identity);
 
-            HexRenderer renderer =  tile.GetComponent<HexRenderer>();
+            HexRenderer renderer = tile.GetComponent<HexRenderer>();
             renderer.setCoordinate(key);
 
             hexGrid.Add(key, tile);
